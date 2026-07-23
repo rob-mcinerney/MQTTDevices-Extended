@@ -1,0 +1,13 @@
+# SmartThings build artifacts
+*.pkg
+*.zip
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
