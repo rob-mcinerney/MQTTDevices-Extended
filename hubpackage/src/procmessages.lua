@@ -396,7 +396,13 @@ local function process_message(topic, msg)
           device:emit_event(cap_numfield.numberval(numval))
           device:emit_event(cap_unitfield.unittext(unitval))
 
-          if dtype == 'WaterPressure' then
+          if dtype == 'Numeric' then
+            device:emit_event(
+              cap_displayvalue.displayval(
+                string.format("%.2f %s", numval, unitval)
+              )
+            )
+          elseif dtype == 'WaterPressure' then
             device:emit_event(
               cap_displayvalue.displayval(
                 tostring(numval) .. " " .. unitval

@@ -2,6 +2,8 @@ name: mqttnumeric.v1
 components:
   - id: main
     capabilities:
+      - id: chaptersmile02196.displayvalue
+        version: 1
       - id: partyvoice23922.numberfield
         version: 1
       - id: partyvoice23922.unitfield
