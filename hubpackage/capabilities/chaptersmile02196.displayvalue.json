@@ -1,0 +1,39 @@
+{
+  "id": "chaptersmile02196.displayvalue",
+  "version": 1,
+  "status": "proposed",
+  "name": "displayvalue",
+  "ephemeral": false,
+  "attributes": {
+    "displayval": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "value"
+        ]
+      },
+      "setter": "setDisplay",
+      "enumCommands": []
+    }
+  },
+  "commands": {
+    "setDisplay": {
+      "name": "setDisplay",
+      "arguments": [
+        {
+          "name": "displayval",
+          "optional": false,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  }
+}

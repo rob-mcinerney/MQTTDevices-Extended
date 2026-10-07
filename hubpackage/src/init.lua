@@ -36,7 +36,7 @@ thisDriver = {}               -- used in the MQTT client module: TODO- pass it i
 SUBSCRIBED_TOPICS = {}        -- referenced by other modules
 client = nil                  -- referenced by other modules
 client_reset_inprogress = false
-creator_device = {}           -- referenced by other modules
+creator_device = nil           -- referenced by other modules
 
 typemeta =  {
               ['Switch']       = { ['profile'] = 'mqttswitch.v2b',       ['created'] = 0, ['switch'] = true  },
@@ -56,6 +56,7 @@ typemeta =  {
               ['Energy']       = { ['profile'] = 'mqttenergy.v3d',       ['created'] = 0, ['switch'] = false },
               ['Text']         = { ['profile'] = 'mqtttext.v2',          ['created'] = 0, ['switch'] = false },
               ['Numeric']      = { ['profile'] = 'mqttnumeric.v1',       ['created'] = 0, ['switch'] = false },
+              ['WaterPressure']      = { ['profile'] = 'mqttwaterpressure.v1',       ['created'] = 0, ['switch'] = false },
               ['CO2']          = { ['profile'] = 'mqttCO2.v1',           ['created'] = 0, ['switch'] = false },
               ['Shade']        = { ['profile'] = 'mqttshade.v1b',        ['created'] = 0, ['switch'] = false },
               ['Battery']      = { ['profile'] = 'mqttbattery.v1',       ['created'] = 0, ['switch'] = false },
@@ -72,7 +73,7 @@ local shutdown_requested = false
 local MASTERPROFILE = 'mqttcreator.v9'
 local MASTERLABEL = 'MQTT Device Creator V1.9'
 
-local CREATECAPID  = 'partyvoice23922.createmqttdev9'
+local CREATECAPID  = 'advanceabate59569.createmqttdev10'
 local CREATECAPID8  = 'partyvoice23922.createmqttdev8'
 local CREATECAPID7 = 'partyvoice23922.createmqttdev7'
 local CREATECAPID6 = 'partyvoice23922.createmqttdev6'
@@ -97,7 +98,7 @@ cap_setenergy = capabilities["partyvoice23922.setenergy"]
 cap_setpower = capabilities["partyvoice23922.setpower"]
 cap_numfield = capabilities["partyvoice23922.numberfield"]
 cap_unitfield = capabilities["partyvoice23922.unitfield"]
-
+cap_displayvalue = capabilities["chaptersmile02196.displayvalue"]
 cap_reset = capabilities["partyvoice23922.resetselect"]
 
 
@@ -344,6 +345,9 @@ local function device_added (driver, device)
     elseif dtype == 'Numeric' then
       device:emit_event(cap_numfield.numberval(0))
       device:emit_event(cap_unitfield.unittext(' '))
+    elseif dtype == 'WaterPressure' then
+      device:emit_event(cap_numfield.numberval(0))
+      device:emit_event(cap_unitfield.unittext(' '))
     elseif dtype == 'CO2' then
       device:emit_event(capabilities.carbonDioxideMeasurement.carbonDioxide(0))
     elseif dtype == 'Shade' then
@@ -356,13 +360,22 @@ local function device_added (driver, device)
       
     end
 
-    creator_device:emit_event(cap_createdev.deviceType('Device created'))
-    clearcreatemsg_timer = driver:call_with_delay(10, function()
-        clearcreatemsg_timer = nil
-        creator_device:emit_event(cap_createdev.deviceType(' ', { visibility = { displayed = false }}))
-      end
-    )
+if creator_device and creator_device.emit_event then
 
+  creator_device:emit_event(cap_createdev.deviceType('Device created'))
+
+  clearcreatemsg_timer = driver:call_with_delay(10, function()
+    clearcreatemsg_timer = nil
+    if creator_device and creator_device.emit_event then
+      creator_device:emit_event(
+        cap_createdev.deviceType(' ', { visibility = { displayed = false }})
+      )
+    end
+  end)
+
+else
+  log.error("Creator device has not been initialized")
+end
   end
 end
 
@@ -478,40 +491,46 @@ local function handler_infochanged (driver, device, event, args)
 end
 
 
+
 -- Create Primary Creator Device
 local function discovery_handler(driver, _, should_continue)
 
+  log.error("===== DISCOVERY HANDLER ENTERED =====")
+  log.error("DISCOVERY: initialized = " .. tostring(initialized))
+
   if not initialized then
 
-    log.info("Creating MQTT Creator device")
+    log.error("DISCOVERY: Creating MQTT Creator device")
 
     local MFG_NAME = 'SmartThings Community'
     local MODEL = 'MQTTCreatorV1'
-    local VEND_LABEL = MASTERLABEL           --update; change for testing
-    local ID = 'MQTTDev_Masterv1'               --change for testing
-    local PROFILE = MASTERPROFILE           --update; change for testing
-
-    -- Create master creator device
+    local VEND_LABEL = MASTERLABEL
+    local ID = 'MQTTDev_Masterv1'
+    local PROFILE = MASTERPROFILE
 
     local create_device_msg = {
-                                type = "LAN",
-                                device_network_id = ID,
-                                label = VEND_LABEL,
-                                profile = PROFILE,
-                                manufacturer = MFG_NAME,
-                                model = MODEL,
-                                vendor_provided_label = VEND_LABEL,
-                              }
+      type = "LAN",
+      device_network_id = ID,
+      label = VEND_LABEL,
+      profile = PROFILE,
+      manufacturer = MFG_NAME,
+      model = MODEL,
+      vendor_provided_label = VEND_LABEL,
+    }
 
-    assert (driver:try_create_device(create_device_msg), "failed to create creator device")
+    local ok, result = pcall(function()
+      return driver:try_create_device(create_device_msg)
+    end)
+
+    log.error("DISCOVERY: try_create_device returned = " .. tostring(ok))
+    log.error("DISCOVERY: result = " .. tostring(result))
 
     log.debug("Exiting device creation")
 
   else
-    log.info ('MQTT Creator device already created')
+    log.error("DISCOVERY: MQTT Creator device already created")
   end
 end
-
 
 -----------------------------------------------------------------------
 --        DRIVER MAINLINE: Build driver context table
@@ -610,6 +629,5 @@ thisDriver = Driver("MQTT Devices", {
   }
 })
 
-log.info ('MQTT Device Driver V1.8 Started')
 
 thisDriver:run()

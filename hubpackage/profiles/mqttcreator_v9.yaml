@@ -2,7 +2,7 @@ name: mqttcreator.v9
 components:
   - id: main
     capabilities:
-      - id: partyvoice23922.createmqttdev9
+      - id: advanceabate59569.createmqttdev10
         version: 1
       - id: partyvoice23922.status
         version: 1

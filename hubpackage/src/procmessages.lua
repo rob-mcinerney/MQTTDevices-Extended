@@ -374,8 +374,8 @@ local function process_message(topic, msg)
         elseif dtype == 'Text' then
           device:emit_event(cap_text.text(value))
           
-        elseif dtype == 'Numeric' then
-        
+        elseif dtype == 'Numeric' or dtype == 'WaterPressure' then
+
           local numval, unitval
           if device.preferences.format == 'json' then
             numval = tonumber(value)
@@ -390,11 +390,20 @@ local function process_message(topic, msg)
             end
           end
 
-          if type(numval) ~= 'number' then; return; end
-          if type(unitval) ~= 'string' then; unitval = ' '; end
-          
+          if type(numval) ~= 'number' then return end
+          if type(unitval) ~= 'string' then unitval = ' ' end
+
           device:emit_event(cap_numfield.numberval(numval))
           device:emit_event(cap_unitfield.unittext(unitval))
+
+          if dtype == 'WaterPressure' then
+            device:emit_event(
+              cap_displayvalue.displayval(
+                tostring(numval) .. " " .. unitval
+              )
+            )
+          end
+
           
         elseif dtype == 'Shade' then
         

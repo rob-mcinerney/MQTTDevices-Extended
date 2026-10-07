@@ -1,0 +1,25 @@
+{
+  "dashboard": {
+    "states": [
+      {
+        "label": "{{displayval.value}}"
+      }
+    ],
+    "actions": []
+  },
+  "detailView": [
+    {
+      "label": "{{i18n.label}}",
+      "displayType": "state",
+      "state": {
+        "label": "{{displayval.value}}"
+      }
+    }
+  ],
+  "automation": {
+    "conditions": [],
+    "actions": []
+  },
+  "id": "chaptersmile02196.displayvalue",
+  "version": 1
+}
